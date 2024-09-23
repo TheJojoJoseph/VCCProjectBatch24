@@ -3,6 +3,9 @@
 Jojo Joseph (G23AI2100) Batch: 2024
 Anirban Sinha (G23AI2084) Batch: 2024
 Aparna Mundke (G23AI2003) Batch: 2024
+Saravanan Gnanapandithamani (G23AI2016) Batch: 2024
+Anas Khan (G23AI2119) Batch: 2024
+
 
 PART 1 - Aparana
 Frontend , Backend and Datebase.
