@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    build:
+      context: ./DATABASE
+      dockerfile: Dockerfile
+    image: postgres:1.0.0
+    container_name: postgres_db
+    environment:
+      POSTGRES_PASSWORD: fact123
+      POSTGRES_DB: student_inventory
+    networks:
+      - student_registery_network
+
+
+  backend:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+    image: student_register_backend:1.0.0
+    container_name: student_registery_backend
+    depends_on:
+      - postgres_db
+    environment:
+      PG_HOST: postgres_db
+      PG_PASSWORD: fact123
+      PG_PORT: 5432
+      HOST: localhost
+      PORT: 5001
+    networks:
+      - student_registery_network
+    ports:
+      - "5001:5001"
+
+  frontend:
+    build:
+      context: ./FRONTEND
+    image: student_register_frontend:1.0.0
+    container_name: student_registery_frontend
+    depends_on:
+      - backend
+    networks:
+      - student_registery_network
+    ports:
+      - "8000:8000"
+
+networks:
+  student_registery_network:
+    driver: bridge
