@@ -1,0 +1,26 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: student-backend 
+  labels: 
+    app: student-backend 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: student-backend 
+  template: 
+    metadata: 
+      labels: 
+        app: student-backend 
+    spec: 
+      containers: 
+        - name: student-backend 
+          image: sample.dkr.ecr.ap-south-1.amazonaws.com/student_register_backend:1.0.0 
+          ports:
+            - containerPort: 5000
+          env: 
+            - name: PG_HOST 
+              value: "postgres-db-service"
+      imagePullSecrets:
+          - name: regcred

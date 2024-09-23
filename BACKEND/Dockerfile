@@ -1,0 +1,12 @@
+FROM node:14.17.3
+WORKDIR /app
+COPY . .
+ENV PG_PASSWORD fact123
+ENV PG_HOST localhost
+ENV PG_PORT 5432
+ENV HOST localhost
+ENV PORT 5001
+RUN npm i
+
+EXPOSE 5001
+CMD ["node","app.js"]

@@ -1,0 +1,23 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: student-frontend 
+  labels: 
+    app: student-frontend 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: student-frontend 
+  template: 
+    metadata: 
+      labels: 
+        app: student-frontend 
+    spec: 
+      containers: 
+        - name: student-frontend 
+          image: sample.dkr.ecr.ap-south-1.amazonaws.com/student_register_frontend:1.0.0 
+          ports:
+            - containerPort: 8000
+      imagePullSecrets: 
+          - name: regcred

@@ -1,0 +1,30 @@
+@import "../../styles/abstracts/controls";
+.nav-bar {
+  display: flex;
+  background-color: #e3e3e3;
+  justify-content: space-between;
+  padding: 20px 0px;
+  a {
+    padding: 0px 20px;
+  }
+}
+.logo {
+  width: 50%; // Set the width to 50%
+  height: auto; // Maintain aspect ratio
+}
+
+.formsBlock {
+  @extend .flex-column;
+  &__list {
+    padding-top: 1rem;
+    padding-left: 10px;
+    @extend .flex-column;
+    li {
+      flex: 1 1 auto;
+      @extend .flex-column;
+      &:not(:last-child) {
+        margin-bottom: 10px;
+      }
+    }
+  }
+}
