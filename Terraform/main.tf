@@ -1,24 +1,24 @@
-# Configure the Google Cloud provider
+# Google Cloud provider setup
 provider "google" {
-  credentials = file("./service-account-key.json")  
-  project     = var.project_id  # Make sure var.project_id is defined in your variables.tf
-  region      = "us-central1"   # Specify your region
+  credentials = file("./service-account-key.json")
+  project     = var.project_id
+  region      = "us-central1"
 }
 
-# Create a health check for the instance group
+# Health check for the instance group
 resource "google_compute_health_check" "default" {
   name = "docker-training-health-check"
+
   http_health_check {
     port         = 80
     request_path = "/"
   }
 }
 
-# Create an instance template
+# Instance template with startup script to install Docker, clone repo, and run Docker Compose
 resource "google_compute_instance_template" "template" {
   name         = "docker-training-template"
-  machine_type = "f1-micro"  # 0.5 GB RAM
-  region       = "us-central1"
+  machine_type = "n1-standard-1" # 3.75 GB RAM
 
   disk {
     source_image = "ubuntu-os-cloud/ubuntu-2004-lts"
@@ -27,9 +27,7 @@ resource "google_compute_instance_template" "template" {
 
   network_interface {
     network = "default"
-    access_config {  # This block assigns a public IP
-      // You can optionally set `nat_ip` here for a specific static IP.
-    }
+    access_config {} # Assigns a public IP
   }
 
   metadata_startup_script = <<-EOT
@@ -37,22 +35,26 @@ resource "google_compute_instance_template" "template" {
     sudo apt-get update
     sudo apt-get install -y docker.io docker-compose git
 
-    # Clone the GitHub repository
-    git clone https://github.com/TheJojoJoseph/DockerTrainingIITJ.git /home/ubuntu/DockerTrainingIITJ
+    # Retry cloning the GitHub repository if it fails
+    retries=5
+    until [ $retries -le 0 ]; do
+      git clone https://github.com/TheJojoJoseph/DockerTrainingIITJ.git /home/ubuntu/DockerTrainingIITJ && break
+      echo "Failed to clone repository. Retrying in 10 seconds..."
+      retries=$((retries-1))
+      sleep 10
+    done
 
-    # Navigate to the Docker Compose directory
+    # Navigate to the Docker Compose directory and run the services
     cd /home/ubuntu/DockerTrainingIITJ
-
-    # Run Docker Compose
     sudo docker-compose up -d
   EOT
 }
 
-# Create a managed instance group
+# Managed instance group with scaling policies
 resource "google_compute_region_instance_group_manager" "ig_manager" {
   name               = "docker-training-ig"
   base_instance_name = "docker-training-instance"
-  target_size        = 1  # Initial instance count
+  target_size        = 1 # Initial instance count
 
   version {
     instance_template = google_compute_instance_template.template.self_link
@@ -63,6 +65,16 @@ resource "google_compute_region_instance_group_manager" "ig_manager" {
     port = 80
   }
 
+  named_port {
+    name = "app-port-8000"
+    port = 8000
+  }
+
+  named_port {
+    name = "app-port-5001"
+    port = 5001
+  }
+
   region = "us-central1"
 
   auto_healing_policies {
@@ -71,7 +83,7 @@ resource "google_compute_region_instance_group_manager" "ig_manager" {
   }
 }
 
-# Create an autoscaler for the instance group
+# Autoscaler for the instance group
 resource "google_compute_region_autoscaler" "autoscaler" {
   name   = "docker-training-autoscaler"
   region = "us-central1"
@@ -81,7 +93,7 @@ resource "google_compute_region_autoscaler" "autoscaler" {
     min_replicas = 1
     max_replicas = 5
     cpu_utilization {
-      target = 0.6  # Target CPU utilization percentage
+      target = 0.8 # Target CPU utilization percentage
     }
   }
 }
@@ -89,4 +101,13 @@ resource "google_compute_region_autoscaler" "autoscaler" {
 # Output the instance group URL
 output "instance_group_url" {
   value = google_compute_region_instance_group_manager.ig_manager.self_link
+}
+
+# Output the exposed ports
+output "exposed_ports" {
+  value = [
+    "80 (HTTP)",
+    "8000 (App Port)",
+    "5001 (App Port)"
+  ]
 }
