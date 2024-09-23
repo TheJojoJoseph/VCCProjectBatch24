@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.3'
 
 services:
   postgres_db:
@@ -12,7 +12,6 @@ services:
       POSTGRES_DB: student_inventory
     networks:
       - student_registery_network
-
 
   backend:
     build:
