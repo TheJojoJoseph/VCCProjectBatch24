@@ -1,4 +1,3 @@
-# Google Cloud provider setup
 provider "google" {
   credentials = file("./service-account-key.json")
   project     = var.project_id
@@ -38,14 +37,14 @@ resource "google_compute_instance_template" "template" {
     # Retry cloning the GitHub repository if it fails
     retries=5
     until [ $retries -le 0 ]; do
-      git clone https://github.com/TheJojoJoseph/DockerTrainingIITJ.git /home/ubuntu/DockerTrainingIITJ && break
+      git clone https://github.com/TheJojoJoseph/VCCProjectBatch24.git /home/ubuntu/VCCProjectBatch24 && break
       echo "Failed to clone repository. Retrying in 10 seconds..."
       retries=$((retries-1))
       sleep 10
     done
 
     # Navigate to the Docker Compose directory and run the services
-    cd /home/ubuntu/DockerTrainingIITJ
+    cd /home/ubuntu/VCCProjectBatch24
     sudo docker-compose up -d
   EOT
 }
@@ -96,6 +95,19 @@ resource "google_compute_region_autoscaler" "autoscaler" {
       target = 0.8 # Target CPU utilization percentage
     }
   }
+}
+
+# Firewall rule to allow traffic on ports 80, 8000, and 5001
+resource "google_compute_firewall" "allow_http_ports" {
+  name    = "allow-http-ports"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "8000", "5001"]
+  }
+
+  source_ranges = ["0.0.0.0/0"] # Allows traffic from anywhere (adjust as necessary)
 }
 
 # Output the instance group URL

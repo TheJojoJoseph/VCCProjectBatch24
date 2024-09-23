@@ -42,7 +42,7 @@ cd venv/bin/
 source activate
 cd ../..
 pip install locust
-locust -f api locustfile.py
+locust -f  locustfile.py
 
 Check the HTML output of locust.
 http://0.0.0.0:8089
