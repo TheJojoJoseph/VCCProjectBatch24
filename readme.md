@@ -46,3 +46,12 @@ locust -f api locustfile.py
 
 Check the HTML output of locust.
 http://0.0.0.0:8089
+
+## Terraform
+
+cd Terraform/
+
+terraform init
+terraform plan
+terraform apply
+
